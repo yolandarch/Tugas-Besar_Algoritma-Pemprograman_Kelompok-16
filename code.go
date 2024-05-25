@@ -2,31 +2,30 @@ package main
 
 import (
 	"fmt"
+	"strings"
+	"time"
 )
 
 type Akun struct {
 	username, password string
 }
 
-type Time struct {
-	tanggal, bulan, tahun int
-}
-
 type Penelitian struct {
 	ID              string
 	Model           string
 	Judul           string
-	Peneliti     	[3]string
-	Institusi     	string
-	WaktuMulai		Time
-	WaktuSelesai	Time
-	WaktuPublikasi 	Time
-	Metode         	string
+	Peneliti        [3]string
+	Institusi       string
+	WaktuMulai      time.Time
+	WaktuSelesai    time.Time
+	WaktuPublikasi  time.Time
+	Metode          string
 	Summary         string
 }
 
-var akun Account
-var Research []Penelitian
+var akun Akun
+var penelitianList [100]Penelitian
+var penelitianCount int
 
 func main() {
 	buatAkun(&akun)
@@ -34,7 +33,7 @@ func main() {
 	menuUtama()
 }
 
-func buatAkun(A *Account) {
+func buatAkun(A *Akun) {
 	fmt.Println("Create Account")
 	fmt.Print("Username: ")
 	fmt.Scan(&A.username)
@@ -43,7 +42,7 @@ func buatAkun(A *Account) {
 	fmt.Println("Akun berhasil dibuat")
 }
 
-func login(A Account) {
+func login(A Akun) {
 	var username, password string
 	fmt.Println("Login")
 	fmt.Print("Username: ")
@@ -131,9 +130,21 @@ func addResearch() {
 	fmt.Print("Waktu Publikasi Penelitian (dd-mm-yyyy): ")
 	fmt.Scan(&publicationDate)
 
-	start, _ := time.Parse("02-01-2006", startDate)
-	end, _ := time.Parse("02-01-2006", endDate)
-	pub, _ := time.Parse("02-01-2006", publicationDate)
+	start, err := time.Parse("02-01-2006", startDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
+	}
+	end, err := time.Parse("02-01-2006", endDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
+	}
+	pub, err := time.Parse("02-01-2006", publicationDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
+	}
 
 	fmt.Print("Metode Penelitian: ")
 	fmt.Scan(&method)
@@ -141,20 +152,22 @@ func addResearch() {
 	fmt.Print("Summary Penelitian (akhiri dengan bintang): ")
 	fmt.Scan(&summary)
 
-	id := fmt.Sprintf("%dP", len(researches)+1)
-	newResearch := Research{
-		ID:              	id,
-		Model:           	model,
-		Judul:           	title,
-		Peneliti:     		researchers,
-		Institusi:     		institution,
-		WaktuMulai:       	start,
-		WaktuSelesai:       end,
-		WaktuPublikasi: 	pub,
-		Metode:          	method,
-		Summary:         	summary,
+	id := fmt.Sprintf("%dP", penelitianCount+1)
+	newResearch := Penelitian{
+		ID:             id,
+		Model:          model,
+		Judul:          title,
+		Peneliti:       researchers,
+		Institusi:      institution,
+		WaktuMulai:     start,
+		WaktuSelesai:   end,
+		WaktuPublikasi: pub,
+		Metode:         method,
+		Summary:        summary,
 	}
 
+	penelitianList[penelitianCount] = newResearch
+	penelitianCount++
 	fmt.Printf("Penelitian %s berhasil ditambahkan\n", title)
 	displayResearch(newResearch)
 }
@@ -175,16 +188,16 @@ func getModelName(pilihan int) string {
 	return "Unknown"
 }
 
-func displayResearch(r Research) {
+func displayResearch(r Penelitian) {
 	fmt.Println("==============================================================================")
 	fmt.Printf("| IdPenelitian       | %s\n", r.ID)
-	fmt.Printf("| Modul              | %s\n", r.Model)
+	fmt.Printf("| Model              | %s\n", r.Model)
 	fmt.Println("|====================|========================================================")
-	fmt.Printf("| Judul Penelitian   | %s\n", r.Title)
-	for i, researcher := range r.Researchers {
+	fmt.Printf("| Judul Penelitian   | %s\n", r.Judul)
+	for i, researcher := range r.Peneliti {
 		fmt.Printf("| Nama Peneliti %d    | %s\n", i+1, researcher)
 	}
-	fmt.Printf("| Lembaga Penelitian | %s\n", r.Institution)
+	fmt.Printf("| Lembaga Penelitian | %s\n", r.Institusi)
 	fmt.Println("==============================================================================")
 }
 
@@ -201,35 +214,42 @@ func viewResearch() {
 		var model string
 		fmt.Print("Masukkan jenis model: ")
 		fmt.Scan(&model)
-		filterAndDisplayResearch(func(r Research) bool {
+		filterAndDisplayResearch(func(r Penelitian) bool {
 			return strings.EqualFold(r.Model, model)
-	})
-	case 2:
+		})
+	} else if pilihan == 2 {
 		var date string
 		fmt.Print("Masukkan tanggal publikasi (dd-mm-yyyy): ")
 		fmt.Scan(&date)
-		pubDate, _ := time.Parse("02-01-2006", date)
-		filterAndDisplayResearch(func(r Research) bool {
-			return r.PublicationDate.Equal(pubDate)
+		pubDate, err := time.Parse("02-01-2006", date)
+		if err != nil {
+			fmt.Println("Format tanggal salah")
+			return
+		}
+		filterAndDisplayResearch(func(r Penelitian) bool {
+			return r.WaktuPublikasi.Equal(pubDate)
 		})
-	case 3:
-		filterAndDisplayResearch(func(r Research) bool {
+	} else if pilihan == 3 {
+		filterAndDisplayResearch(func(r Penelitian) bool {
 			return true
 		})
-	default:
+	} else {
 		fmt.Println("Pilihan tidak valid")
 	}
 }
 
-func filterAndDisplayResearch(filterFunc func(Research) bool) {
-	filtered := []Research{}
-	for _, r := range researches {
-		if filterFunc(r) {
-			filtered = append(filtered, r)
+func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
+	var filtered [100]Penelitian
+	var count int
+
+	for i := 0; i < penelitianCount; i++ {
+		if filterFunc(penelitianList[i]) {
+			filtered[count] = penelitianList[i]
+			count++
 		}
 	}
 
-	if len(filtered) == 0 {
+	if count == 0 {
 		fmt.Println("Tidak ada penelitian yang ditemukan")
 		return
 	}
@@ -241,15 +261,26 @@ func filterAndDisplayResearch(filterFunc func(Research) bool) {
 	fmt.Print("Pilih urutan: ")
 	fmt.Scan(&pengurutanPilihan)
 
-	sort.Slice(filtered, func(i, j int) bool {
-		if pengurutanPilihan == 1 {
-			return filtered[i].Title < filtered[j].Title
+	if pengurutanPilihan == 1 {
+		for i := 0; i < count-1; i++ {
+			for j := 0; j < count-i-1; j++ {
+				if filtered[j].Judul > filtered[j+1].Judul {
+					filtered[j], filtered[j+1] = filtered[j+1], filtered[j]
+				}
+			}
 		}
-		return filtered[i].Title > filtered[j].Title
-	})
+	} else {
+		for i := 0; i < count-1; i++ {
+			for j := 0; j < count-i-1; j++ {
+				if filtered[j].Judul < filtered[j+1].Judul {
+					filtered[j], filtered[j+1] = filtered[j+1], filtered[j]
+				}
+			}
+		}
+	}
 
-	for _, r := range filtered {
-		displayResearch(r)
+	for i := 0; i < count; i++ {
+		displayResearch(filtered[i])
 	}
 }
 
@@ -258,17 +289,17 @@ func viewResearchSummary() {
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian: ")
 	fmt.Scan(&idOrTitle)
 
-	for _, r := range researches {
-		if strings.EqualFold(r.ID, idOrTitle) || strings.EqualFold(r.Title, idOrTitle) {
+	for i := 0; i < penelitianCount; i++ {
+		if strings.EqualFold(penelitianList[i].ID, idOrTitle) || strings.EqualFold(penelitianList[i].Judul, idOrTitle) {
 			fmt.Println("==============================================================================")
-			fmt.Printf("| IdPenelitian       | %s\n", r.ID)
-			fmt.Printf("| Modul              | %s\n", r.Model)
+			fmt.Printf("| IdPenelitian       | %s\n", penelitianList[i].ID)
+			fmt.Printf("| Model              | %s\n", penelitianList[i].Model)
 			fmt.Println("|====================|========================================================")
-			fmt.Printf("| Judul Penelitian   | %s\n", r.Title)
-			for i, researcher := range r.Researchers {
-				fmt.Printf("| Nama Peneliti %d    | %s\n", i+1, researcher)
+			fmt.Printf("| Judul Penelitian   | %s\n", penelitianList[i].Judul)
+			for j, researcher := range penelitianList[i].Peneliti {
+				fmt.Printf("| Nama Peneliti %d    | %s\n", j+1, researcher)
 			}
-			fmt.Printf("| Summary Penelitian | %s\n", r.Summary)
+			fmt.Printf("| Summary Penelitian | %s\n", penelitianList[i].Summary)
 			fmt.Println("==============================================================================")
 			return
 		}
@@ -283,13 +314,13 @@ func compareResearch() {
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian kedua: ")
 	fmt.Scan(&idOrTitle2)
 
-	var r1, r2 *Research
-	for i := range researches {
-		if strings.EqualFold(researches[i].ID, idOrTitle1) || strings.EqualFold(researches[i].Title, idOrTitle1) {
-			r1 = &researches[i]
+	var r1, r2 *Penelitian
+	for i := 0; i < penelitianCount; i++ {
+		if strings.EqualFold(penelitianList[i].ID, idOrTitle1) || strings.EqualFold(penelitianList[i].Judul, idOrTitle1) {
+			r1 = &penelitianList[i]
 		}
-		if strings.EqualFold(researches[i].ID, idOrTitle2) || strings.EqualFold(researches[i].Title, idOrTitle2) {
-			r2 = &researches[i]
+		if strings.EqualFold(penelitianList[i].ID, idOrTitle2) || strings.EqualFold(penelitianList[i].Judul, idOrTitle2) {
+			r2 = &penelitianList[i]
 		}
 	}
 
@@ -299,17 +330,17 @@ func compareResearch() {
 	}
 
 	fmt.Println("==============================================================================")
-	fmt.Printf("| Perbandingan antara %s dan %s\n", r1.Title, r2.Title)
+	fmt.Printf("| Perbandingan antara %s dan %s\n", r1.Judul, r2.Judul)
 	fmt.Println("==============================================================================")
-	duration1 := r1.PublicationDate.Sub(r1.StartDate)
-	duration2 := r2.PublicationDate.Sub(r2.StartDate)
+	duration1 := r1.WaktuPublikasi.Sub(r1.WaktuMulai)
+	duration2 := r2.WaktuPublikasi.Sub(r2.WaktuMulai)
 
-	fmt.Printf("| %s: %v hari\n", r1.Title, duration1.Hours()/24)
-	fmt.Printf("| %s: %v hari\n", r2.Title, duration2.Hours()/24)
+	fmt.Printf("| %s: %v hari\n", r1.Judul, duration1.Hours()/24)
+	fmt.Printf("| %s: %v hari\n", r2.Judul, duration2.Hours()/24)
 	if duration1 < duration2 {
-		fmt.Printf("| %s lebih cepat dipublikasikan\n", r1.Title)
+		fmt.Printf("| %s lebih cepat dipublikasikan\n", r1.Judul)
 	} else if duration1 > duration2 {
-		fmt.Printf("| %s lebih cepat dipublikasikan\n", r2.Title)
+		fmt.Printf("| %s lebih cepat dipublikasikan\n", r2.Judul)
 	} else {
 		fmt.Println("| Kedua penelitian memiliki durasi yang sama hingga publikasi")
 	}
@@ -321,8 +352,8 @@ func editOrDeleteResearch() {
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian yang akan diubah/hapus: ")
 	fmt.Scan(&idOrTitle)
 
-	for i := range researches {
-		if strings.EqualFold(researches[i].ID, idOrTitle) || strings.EqualFold(researches[i].Title, idOrTitle) {
+	for i := 0; i < penelitianCount; i++ {
+		if strings.EqualFold(penelitianList[i].ID, idOrTitle) || strings.EqualFold(penelitianList[i].Judul, idOrTitle) {
 			fmt.Println("Penelitian ditemukan. Pilih opsi:")
 			fmt.Println("1. Edit Penelitian")
 			fmt.Println("2. Hapus Penelitian")
@@ -331,7 +362,7 @@ func editOrDeleteResearch() {
 			fmt.Scan(&pilihan)
 
 			if pilihan == 1 {
-				editResearch(&researches[i])
+				editResearch(&penelitianList[i])
 				return
 			} else if pilihan == 2 {
 				deleteResearch(i)
@@ -345,7 +376,7 @@ func editOrDeleteResearch() {
 	fmt.Println("Penelitian tidak ditemukan")
 }
 
-func editResearch(r *Research) {
+func editResearch(r *Penelitian) {
 	fmt.Println("Masukkan data baru (kosongkan untuk tidak mengubah):")
 	var model, title, institution, method, summary string
 	var researchers [3]string
@@ -357,52 +388,58 @@ func editResearch(r *Research) {
 		r.Model = model
 	}
 
-	fmt.Print("Judul Penelitian (sekarang: " + r.Title + "): ")
+	fmt.Print("Judul Penelitian (sekarang: " + r.Judul + "): ")
 	fmt.Scan(&title)
 	if title != "" {
-		r.Title = title
+		r.Judul = title
 	}
 
 	for j := 0; j < 3; j++ {
-		fmt.Printf("Nama Peneliti %d (sekarang: %s): ", j+1, r.Researchers[j])
+		fmt.Printf("Nama Peneliti %d (sekarang: %s): ", j+1, r.Peneliti[j])
 		fmt.Scan(&researchers[j])
 		if researchers[j] != "" {
-			r.Researchers[j] = researchers[j]
+			r.Peneliti[j] = researchers[j]
 		}
 	}
 
-	fmt.Print("Lembaga Penelitian (sekarang: " + r.Institution + ", berhenti dengan titik): ")
+	fmt.Print("Lembaga Penelitian (sekarang: " + r.Institusi + ", berhenti dengan titik): ")
 	fmt.Scan(&institution)
 	if institution != "" {
 		institution = strings.TrimSuffix(institution, ".")
-		r.Institution = institution
+		r.Institusi = institution
 	}
 
-	fmt.Print("Waktu Mulai Penelitian (sekarang: " + r.StartDate.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Mulai Penelitian (sekarang: " + r.WaktuMulai.Format("02-01-2006") + "): ")
 	fmt.Scan(&startDate)
 	if startDate != "" {
-		start, _ := time.Parse("02-01-2006", startDate)
-		r.StartDate = start
+		start, err := time.Parse("02-01-2006", startDate)
+		if err == nil {
+			r.WaktuMulai = start
+		}
 	}
 
-	fmt.Print("Waktu Berakhir Penelitian (sekarang: " + r.EndDate.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Berakhir Penelitian (sekarang: " + r.WaktuSelesai.Format("02-01-2006") + "): ")
 	fmt.Scan(&endDate)
 	if endDate != "" {
-		end, _ := time.Parse("02-01-2006", endDate)
-		r.EndDate = end
+		end, err := time.Parse("02-01-2006", endDate)
+		if err == nil {
+			r.WaktuSelesai = end
+		}
 	}
 
-	fmt.Print("Waktu Publikasi Penelitian (sekarang: " + r.PublicationDate.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Publikasi Penelitian (sekarang: " + r.WaktuPublikasi.Format("02-01-2006") + "): ")
 	fmt.Scan(&publicationDate)
 	if publicationDate != "" {
-		pub, _ := time.Parse("02-01-2006", publicationDate)
-		r.PublicationDate = pub
+		pub, err := time.Parse("02-01-2006", publicationDate)
+		if err == nil {
+			r.WaktuPublikasi = pub
+		}
 	}
 
-	fmt.Print("Metode Penelitian (sekarang: " + r.Method + "): ")
+	fmt.Print("Metode Penelitian (sekarang: " + r.Metode + "): ")
 	fmt.Scan(&method)
 	if method != "" {
-		r.Method = method
+		r.Metode = method
 	}
 
 	fmt.Print("Summary Penelitian (sekarang: " + r.Summary + ", akhiri dengan bintang): ")
@@ -417,7 +454,9 @@ func editResearch(r *Research) {
 }
 
 func deleteResearch(index int) {
-	researches = append(researches[:index], researches[index+1:]...)
+	for i := index; i < penelitianCount-1; i++ {
+		penelitianList[i] = penelitianList[i+1]
+	}
+	penelitianCount--
 	fmt.Println("Penelitian berhasil dihapus")
 }
-
