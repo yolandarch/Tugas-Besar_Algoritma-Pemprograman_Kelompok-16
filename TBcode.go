@@ -11,16 +11,16 @@ type Akun struct {
 }
 
 type Penelitian struct {
-	ID              string
-	Model           string
-	Judul           string
-	Peneliti        [3]string
-	Institusi       string
-	WaktuMulai      time.Time
-	WaktuSelesai    time.Time
-	WaktuPublikasi  time.Time
-	Metode          string
-	Summary         string
+	ID             string
+	Model          string
+	Judul          string
+	Peneliti       [3]string
+	Institusi      string
+	WaktuMulai     time.Time
+	WaktuSelesai   time.Time
+	WaktuPublikasi time.Time
+	Metode         string
+	Summary        string
 }
 
 var akun Akun
@@ -34,7 +34,9 @@ func main() {
 }
 
 func buatAkun(A *Akun) {
+	fmt.Println("==============")
 	fmt.Println("Create Account")
+	fmt.Println("==============")
 	fmt.Print("Username: ")
 	fmt.Scan(&A.username)
 	fmt.Print("Password: ")
@@ -44,7 +46,9 @@ func buatAkun(A *Akun) {
 
 func login(A Akun) {
 	var username, password string
-	fmt.Println("Login")
+	fmt.Println("==============")
+	fmt.Println("     Login    ")
+	fmt.Println("==============")
 	fmt.Print("Username: ")
 	fmt.Scan(&username)
 	if username != A.username {
@@ -64,7 +68,9 @@ func login(A Akun) {
 
 func menuUtama() {
 	for {
-		fmt.Println("Menu:")
+		fmt.Println("================================")
+		fmt.Println("              MENU              ")
+		fmt.Println("================================")
 		fmt.Println("1. Tambahkan Penelitian")
 		fmt.Println("2. Lihat Penelitian")
 		fmt.Println("3. Lihat Summary Penelitian")
@@ -100,7 +106,9 @@ func addResearch() {
 	var researchers [3]string
 	var startDate, endDate, publicationDate string
 
-	fmt.Println("Tambah Penelitian")
+	fmt.Println("=========================")
+	fmt.Println("    Tambah Penelitian    ")
+	fmt.Println("=========================")
 	fmt.Println("Pilih model:")
 	fmt.Println("1. Machine Learning")
 	fmt.Println("2. Deep Learning")
@@ -203,6 +211,9 @@ func displayResearch(r Penelitian) {
 }
 
 func viewResearch() {
+	fmt.Println("=============================")
+	fmt.Println("       Lihat Penelitian      ")
+	fmt.Println("=============================")
 	fmt.Println("Lihat Penelitian Berdasarkan:")
 	fmt.Println("1. Jenis Model")
 	fmt.Println("2. Tanggal Publikasi")
@@ -288,6 +299,9 @@ func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
 
 func viewResearchSummary() {
 	var idOrTitle string
+	fmt.Println("=============================================")
+	fmt.Println("           Lihat Summary Penelitian          ")
+	fmt.Println("=============================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian: ")
 	fmt.Scan(&idOrTitle)
 
@@ -313,6 +327,9 @@ func viewResearchSummary() {
 
 func compareResearch() {
 	var idOrTitle1, idOrTitle2 string
+	fmt.Println("===========================================")
+	fmt.Println("          Perbandingan Penelitian          ")
+	fmt.Println("===========================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian pertama: ")
 	fmt.Scan(&idOrTitle1)
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian kedua: ")
@@ -355,6 +372,9 @@ func compareResearch() {
 
 func editOrDeleteResearch() {
 	var idOrTitle string
+	fmt.Println("===========================================")
+	fmt.Println("           Edit/Hapus Penelitian           ")
+	fmt.Println("===========================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian yang akan diubah/hapus: ")
 	fmt.Scan(&idOrTitle)
 
