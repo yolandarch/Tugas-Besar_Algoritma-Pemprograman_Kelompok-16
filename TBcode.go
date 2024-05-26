@@ -11,16 +11,16 @@ type Akun struct {
 }
 
 type Penelitian struct {
-	ID             string
-	Model          string
-	Judul          string
-	Peneliti       [3]string
-	Institusi      string
-	WaktuMulai     time.Time
-	WaktuSelesai   time.Time
-	WaktuPublikasi time.Time
-	Metode         string
-	Summary        string
+	ID              string
+	Model           string
+	Judul           string
+	Peneliti        [3]string
+	Institusi       string
+	WaktuMulai      time.Time
+	WaktuSelesai    time.Time
+	WaktuPublikasi  time.Time
+	Metode          string
+	Summary         string
 }
 
 var akun Akun
@@ -34,9 +34,7 @@ func main() {
 }
 
 func buatAkun(A *Akun) {
-	fmt.Println("==============")
 	fmt.Println("Create Account")
-	fmt.Println("==============")
 	fmt.Print("Username: ")
 	fmt.Scan(&A.username)
 	fmt.Print("Password: ")
@@ -46,9 +44,7 @@ func buatAkun(A *Akun) {
 
 func login(A Akun) {
 	var username, password string
-	fmt.Println("==============")
-	fmt.Println("     Login    ")
-	fmt.Println("==============")
+	fmt.Println("Login")
 	fmt.Print("Username: ")
 	fmt.Scan(&username)
 	if username != A.username {
@@ -68,9 +64,7 @@ func login(A Akun) {
 
 func menuUtama() {
 	for {
-		fmt.Println("================================")
-		fmt.Println("              MENU              ")
-		fmt.Println("================================")
+		fmt.Println("Menu:")
 		fmt.Println("1. Tambahkan Penelitian")
 		fmt.Println("2. Lihat Penelitian")
 		fmt.Println("3. Lihat Summary Penelitian")
@@ -106,9 +100,7 @@ func addResearch() {
 	var researchers [3]string
 	var startDate, endDate, publicationDate string
 
-	fmt.Println("=========================")
-	fmt.Println("    Tambah Penelitian    ")
-	fmt.Println("=========================")
+	fmt.Println("Tambah Penelitian")
 	fmt.Println("Pilih model:")
 	fmt.Println("1. Machine Learning")
 	fmt.Println("2. Deep Learning")
@@ -211,9 +203,6 @@ func displayResearch(r Penelitian) {
 }
 
 func viewResearch() {
-	fmt.Println("=============================")
-	fmt.Println("       Lihat Penelitian      ")
-	fmt.Println("=============================")
 	fmt.Println("Lihat Penelitian Berdasarkan:")
 	fmt.Println("1. Jenis Model")
 	fmt.Println("2. Tanggal Publikasi")
@@ -268,28 +257,25 @@ func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
 	}
 
 	fmt.Println("Pilih Urutan:")
-	fmt.Println("1. Ascending")
-	fmt.Println("2. Descending")
+	fmt.Println("1. ID")
+	fmt.Println("2. Model")
+	fmt.Println("3. Judul")
+	fmt.Println("4. Metode")
 	var pengurutanPilihan int
 	fmt.Print("Pilih urutan: ")
 	fmt.Scan(&pengurutanPilihan)
 
 	if pengurutanPilihan == 1 {
-		for i := 0; i < count-1; i++ {
-			for j := 0; j < count-i-1; j++ {
-				if filtered[j].Judul > filtered[j+1].Judul {
-					filtered[j], filtered[j+1] = filtered[j+1], filtered[j]
-				}
-			}
-		}
+		sortByID(filtered[:count])
+	} else if pengurutanPilihan == 2 {
+		sortByModel(filtered[:count])
+	} else if pengurutanPilihan == 3 {
+		sortByTitle(filtered[:count])
+	} else if pengurutanPilihan == 4 {
+		sortByMethod(filtered[:count])
 	} else {
-		for i := 0; i < count-1; i++ {
-			for j := 0; j < count-i-1; j++ {
-				if filtered[j].Judul < filtered[j+1].Judul {
-					filtered[j], filtered[j+1] = filtered[j+1], filtered[j]
-				}
-			}
-		}
+		fmt.Println("Pilihan tidak valid")
+		return
 	}
 
 	for i := 0; i < count; i++ {
@@ -297,11 +283,48 @@ func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
 	}
 }
 
+func sortByID(penelitian []Penelitian) {
+	for i := 0; i < len(penelitian)-1; i++ {
+		for j := 0; j < len(penelitian)-i-1; j++ {
+			if penelitian[j].ID > penelitian[j+1].ID {
+				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+			}
+		}
+	}
+}
+
+func sortByModel(penelitian []Penelitian) {
+	for i := 0; i < len(penelitian)-1; i++ {
+		for j := 0; j < len(penelitian)-i-1; j++ {
+			if penelitian[j].Model > penelitian[j+1].Model {
+				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+			}
+		}
+	}
+}
+
+func sortByTitle(penelitian []Penelitian) {
+	for i := 0; i < len(penelitian)-1; i++ {
+		for j := 0; j < len(penelitian)-i-1; j++ {
+			if penelitian[j].Judul > penelitian[j+1].Judul {
+				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+			}
+		}
+	}
+}
+
+func sortByMethod(penelitian []Penelitian) {
+	for i := 0; i < len(penelitian)-1; i++ {
+		for j := 0; j < len(penelitian)-i-1; j++ {
+			if penelitian[j].Metode > penelitian[j+1].Metode {
+				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+			}
+		}
+	}
+}
+
 func viewResearchSummary() {
 	var idOrTitle string
-	fmt.Println("=============================================")
-	fmt.Println("           Lihat Summary Penelitian          ")
-	fmt.Println("=============================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian: ")
 	fmt.Scan(&idOrTitle)
 
@@ -327,9 +350,6 @@ func viewResearchSummary() {
 
 func compareResearch() {
 	var idOrTitle1, idOrTitle2 string
-	fmt.Println("===========================================")
-	fmt.Println("          Perbandingan Penelitian          ")
-	fmt.Println("===========================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian pertama: ")
 	fmt.Scan(&idOrTitle1)
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian kedua: ")
@@ -372,9 +392,6 @@ func compareResearch() {
 
 func editOrDeleteResearch() {
 	var idOrTitle string
-	fmt.Println("===========================================")
-	fmt.Println("           Edit/Hapus Penelitian           ")
-	fmt.Println("===========================================")
 	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian yang akan diubah/hapus: ")
 	fmt.Scan(&idOrTitle)
 
