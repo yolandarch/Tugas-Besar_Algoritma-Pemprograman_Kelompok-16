@@ -11,16 +11,16 @@ type Akun struct {
 }
 
 type Penelitian struct {
-	ID              string
-	Model           string
-	Judul           string
-	Peneliti        [3]string
-	Institusi       string
-	WaktuMulai      time.Time
-	WaktuSelesai    time.Time
-	WaktuPublikasi  time.Time
-	Metode          string
-	Summary         string
+	ID             string
+	Model          string
+	Judul          string
+	Peneliti       [3]string
+	Institusi      string
+	WaktuMulai     time.Time
+	WaktuSelesai   time.Time
+	WaktuPublikasi time.Time
+	Metode         string
+	Summary        string
 }
 
 var akun Akun
@@ -63,35 +63,33 @@ func login(A Akun) {
 }
 
 func menuUtama() {
-	for {
-		fmt.Println("Menu:")
-		fmt.Println("1. Tambahkan Penelitian")
-		fmt.Println("2. Lihat Penelitian")
-		fmt.Println("3. Lihat Summary Penelitian")
-		fmt.Println("4. Lihat Perbandingan Penelitian")
-		fmt.Println("5. Edit/Hapus Penelitian")
-		fmt.Println("6. Kembali")
+	fmt.Println("Menu:")
+	fmt.Println("1. Tambahkan Penelitian")
+	fmt.Println("2. Lihat Penelitian")
+	fmt.Println("3. Lihat Summary Penelitian")
+	fmt.Println("4. Lihat Perbandingan Penelitian")
+	fmt.Println("5. Edit/Hapus Penelitian")
+	fmt.Println("6. Keluar")
 
-		var pilihan int
-		fmt.Print("Pilih menu: ")
-		fmt.Scan(&pilihan)
+	var pilihan int
+	fmt.Print("Pilih menu: ")
+	fmt.Scan(&pilihan)
 
-		if pilihan == 1 {
-			addResearch()
-		} else if pilihan == 2 {
-			viewResearch()
-		} else if pilihan == 3 {
-			viewResearchSummary()
-		} else if pilihan == 4 {
-			compareResearch()
-		} else if pilihan == 5 {
-			editOrDeleteResearch()
-		} else if pilihan == 6 {
-			fmt.Println("Kembali ke menu utama")
-			return
-		} else {
-			fmt.Println("Pilihan tidak valid")
-		}
+	if pilihan == 1 {
+		addResearch()
+	} else if pilihan == 2 {
+		viewResearch()
+	} else if pilihan == 3 {
+		viewResearchSummary()
+	} else if pilihan == 4 {
+		compareResearch()
+	} else if pilihan == 5 {
+		editOrDeleteResearch()
+	} else if pilihan == 6 {
+		fmt.Println("Keluar")
+		return
+	} else {
+		fmt.Println("Pilihan tidak valid")
 	}
 }
 
