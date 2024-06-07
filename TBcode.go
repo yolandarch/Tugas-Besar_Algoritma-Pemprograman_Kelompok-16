@@ -90,6 +90,7 @@ func menuUtama() {
 		return
 	} else {
 		fmt.Println("Pilihan tidak valid")
+		menuUtama()
 	}
 }
 
@@ -234,8 +235,8 @@ func viewResearch() {
 		})
 	} else {
 		fmt.Println("Pilihan tidak valid")
+		menuUtama()
 	}
-	menuUtama()
 }
 
 func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
@@ -255,22 +256,22 @@ func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
 	}
 
 	fmt.Println("Pilih Urutan:")
-	fmt.Println("1. ID")
-	fmt.Println("2. Model")
-	fmt.Println("3. Judul")
-	fmt.Println("4. Metode")
+	fmt.Println("1. ID (Binary Sort)")
+	fmt.Println("2. Model (Insertion Sort)")
+	fmt.Println("3. Judul (Selection Sort)")
+	fmt.Println("4. Metode (Sequential Sort)")
 	var pengurutanPilihan int
 	fmt.Print("Pilih urutan: ")
 	fmt.Scan(&pengurutanPilihan)
 
 	if pengurutanPilihan == 1 {
-		sortByID(filtered[:count])
+		binarySortByID(filtered[:count])
 	} else if pengurutanPilihan == 2 {
-		sortByModel(filtered[:count])
+		insertionSortByModel(filtered[:count])
 	} else if pengurutanPilihan == 3 {
-		sortByTitle(filtered[:count])
+		selectionSortByTitle(filtered[:count])
 	} else if pengurutanPilihan == 4 {
-		sortByMethod(filtered[:count])
+		sequentialSortByMethod(filtered[:count])
 	} else {
 		fmt.Println("Pilihan tidak valid")
 		return
@@ -279,221 +280,209 @@ func filterAndDisplayResearch(filterFunc func(Penelitian) bool) {
 	for i := 0; i < count; i++ {
 		displayResearch(filtered[i])
 	}
+	menuUtama()
 }
 
-func sortByID(penelitian []Penelitian) {
-	for i := 0; i < len(penelitian)-1; i++ {
-		for j := 0; j < len(penelitian)-i-1; j++ {
-			if penelitian[j].ID > penelitian[j+1].ID {
-				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+func binarySortByID(penelitian []Penelitian) {
+	for i := 1; i < len(penelitian); i++ {
+		key := penelitian[i]
+		low, high := 0, i-1
+		for low <= high {
+			mid := (low + high) / 2
+			if penelitian[mid].ID < key.ID {
+				low = mid + 1
+			} else {
+				high = mid - 1
 			}
 		}
+		for j := i - 1; j >= low; j-- {
+			penelitian[j+1] = penelitian[j]
+		}
+		penelitian[low] = key
 	}
 }
 
-func sortByModel(penelitian []Penelitian) {
-	for i := 0; i < len(penelitian)-1; i++ {
-		for j := 0; j < len(penelitian)-i-1; j++ {
-			if penelitian[j].Model > penelitian[j+1].Model {
-				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
-			}
+func insertionSortByModel(penelitian []Penelitian) {
+	for i := 1; i < len(penelitian); i++ {
+		key := penelitian[i]
+		j := i - 1
+		for j >= 0 && penelitian[j].Model > key.Model {
+			penelitian[j+1] = penelitian[j]
+			j--
 		}
+		penelitian[j+1] = key
 	}
 }
 
-func sortByTitle(penelitian []Penelitian) {
+func selectionSortByTitle(penelitian []Penelitian) {
 	for i := 0; i < len(penelitian)-1; i++ {
-		for j := 0; j < len(penelitian)-i-1; j++ {
-			if penelitian[j].Judul > penelitian[j+1].Judul {
-				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+		minIndex := i
+		for j := i + 1; j < len(penelitian); j++ {
+			if penelitian[j].Judul < penelitian[minIndex].Judul {
+				minIndex = j
 			}
 		}
+		penelitian[i], penelitian[minIndex] = penelitian[minIndex], penelitian[i]
 	}
 }
 
-func sortByMethod(penelitian []Penelitian) {
-	for i := 0; i < len(penelitian)-1; i++ {
-		for j := 0; j < len(penelitian)-i-1; j++ {
-			if penelitian[j].Metode > penelitian[j+1].Metode {
-				penelitian[j], penelitian[j+1] = penelitian[j+1], penelitian[j]
+func sequentialSortByMethod(penelitian []Penelitian) {
+	n := len(penelitian)
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			if penelitian[i].Metode > penelitian[j].Metode {
+				penelitian[i], penelitian[j] = penelitian[j], penelitian[i]
 			}
 		}
 	}
 }
 
 func viewResearchSummary() {
-	var idOrTitle string
-	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian: ")
-	fmt.Scan(&idOrTitle)
+	var id string
+	fmt.Print("Masukkan ID Penelitian: ")
+	fmt.Scan(&id)
 
 	for i := 0; i < penelitianCount; i++ {
-		if strings.EqualFold(penelitianList[i].ID, idOrTitle) || strings.EqualFold(penelitianList[i].Judul, idOrTitle) {
-			fmt.Println("==============================================================================")
-			fmt.Printf("| IdPenelitian       | %s\n", penelitianList[i].ID)
-			fmt.Printf("| Model              | %s\n", penelitianList[i].Model)
-			fmt.Println("|====================|========================================================")
-			fmt.Printf("| Judul Penelitian   | %s\n", penelitianList[i].Judul)
-			for j, researcher := range penelitianList[i].Peneliti {
-				fmt.Printf("| Nama Peneliti %d    | %s\n", j+1, researcher)
-			}
-			fmt.Printf("| Summary Penelitian | %s\n", penelitianList[i].Summary)
-			fmt.Println("==============================================================================")
-			menuUtama()
+		if penelitianList[i].ID == id {
+			fmt.Println("Summary Penelitian:")
+			fmt.Println(penelitianList[i].Summary)
 			return
 		}
 	}
-	fmt.Println("Penelitian tidak ditemukan")
+	fmt.Println("Penelitian dengan ID tersebut tidak ditemukan")
 	menuUtama()
 }
 
 func compareResearch() {
-	var idOrTitle1, idOrTitle2 string
-	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian pertama: ")
-	fmt.Scan(&idOrTitle1)
-	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian kedua: ")
-	fmt.Scan(&idOrTitle2)
+	var id1, id2 string
+	fmt.Print("Masukkan ID Penelitian Pertama: ")
+	fmt.Scan(&id1)
+	fmt.Print("Masukkan ID Penelitian Kedua: ")
+	fmt.Scan(&id2)
 
-	var r1, r2 *Penelitian
+	var penelitian1, penelitian2 *Penelitian
 	for i := 0; i < penelitianCount; i++ {
-		if strings.EqualFold(penelitianList[i].ID, idOrTitle1) || strings.EqualFold(penelitianList[i].Judul, idOrTitle1) {
-			r1 = &penelitianList[i]
+		if penelitianList[i].ID == id1 {
+			penelitian1 = &penelitianList[i]
 		}
-		if strings.EqualFold(penelitianList[i].ID, idOrTitle2) || strings.EqualFold(penelitianList[i].Judul, idOrTitle2) {
-			r2 = &penelitianList[i]
+		if penelitianList[i].ID == id2 {
+			penelitian2 = &penelitianList[i]
 		}
 	}
 
-	if r1 == nil || r2 == nil {
-		fmt.Println("Salah satu atau kedua penelitian tidak ditemukan")
+	if penelitian1 == nil || penelitian2 == nil {
+		fmt.Println("Salah satu ID Penelitian tidak ditemukan")
 		menuUtama()
 		return
 	}
 
-	fmt.Println("==============================================================================")
-	fmt.Printf("| Perbandingan antara %s dan %s\n", r1.Judul, r2.Judul)
-	fmt.Println("==============================================================================")
-	duration1 := r1.WaktuPublikasi.Sub(r1.WaktuMulai)
-	duration2 := r2.WaktuPublikasi.Sub(r2.WaktuMulai)
-
-	fmt.Printf("| %s: %v hari\n", r1.Judul, duration1.Hours()/24)
-	fmt.Printf("| %s: %v hari\n", r2.Judul, duration2.Hours()/24)
-	if duration1 < duration2 {
-		fmt.Printf("| %s lebih cepat dipublikasikan\n", r1.Judul)
-	} else if duration1 > duration2 {
-		fmt.Printf("| %s lebih cepat dipublikasikan\n", r2.Judul)
-	} else {
-		fmt.Println("| Kedua penelitian memiliki durasi yang sama hingga publikasi")
-	}
-	fmt.Println("==============================================================================")
+	fmt.Println("Perbandingan Penelitian:")
+	fmt.Printf("Judul: %s vs %s\n", penelitian1.Judul, penelitian2.Judul)
+	fmt.Printf("Model: %s vs %s\n", penelitian1.Model, penelitian2.Model)
+	fmt.Printf("Peneliti: %v vs %v\n", penelitian1.Peneliti, penelitian2.Peneliti)
+	fmt.Printf("Institusi: %s vs %s\n", penelitian1.Institusi, penelitian2.Institusi)
+	fmt.Printf("Metode: %s vs %s\n", penelitian1.Metode, penelitian2.Metode)
 	menuUtama()
 }
 
 func editOrDeleteResearch() {
-	var idOrTitle string
-	fmt.Print("Masukkan IdPenelitian atau Judul Penelitian yang akan diubah/hapus: ")
-	fmt.Scan(&idOrTitle)
+	var id string
+	fmt.Print("Masukkan ID Penelitian: ")
+	fmt.Scan(&id)
 
 	for i := 0; i < penelitianCount; i++ {
-		if strings.EqualFold(penelitianList[i].ID, idOrTitle) || strings.EqualFold(penelitianList[i].Judul, idOrTitle) {
-			fmt.Println("Penelitian ditemukan. Pilih opsi:")
-			fmt.Println("1. Edit Penelitian")
-			fmt.Println("2. Hapus Penelitian")
-			var pilihan int
-			fmt.Print("Pilih opsi: ")
-			fmt.Scan(&pilihan)
-
-			if pilihan == 1 {
+		if penelitianList[i].ID == id {
+			fmt.Println("Penelitian ditemukan. Pilih aksi:")
+			fmt.Println("1. Edit")
+			fmt.Println("2. Hapus")
+			var aksi int
+			fmt.Print("Pilih aksi: ")
+			fmt.Scan(&aksi)
+			if aksi == 1 {
 				editResearch(&penelitianList[i])
-				return
-			} else if pilihan == 2 {
+			} else if aksi == 2 {
 				deleteResearch(i)
-				return
 			} else {
-				fmt.Println("Pilihan tidak valid")
+				fmt.Println("Aksi tidak valid")
 				menuUtama()
-				return
 			}
+			return
 		}
 	}
-	fmt.Println("Penelitian tidak ditemukan")
+	fmt.Println("Penelitian dengan ID tersebut tidak ditemukan")
 	menuUtama()
 }
 
-func editResearch(r *Penelitian) {
-	fmt.Println("Masukkan data baru (kosongkan untuk tidak mengubah):")
+func editResearch(p *Penelitian) {
 	var model, title, institution, method, summary string
 	var researchers [3]string
 	var startDate, endDate, publicationDate string
 
-	fmt.Print("Model Penelitian (sekarang: " + r.Model + "): ")
-	fmt.Scan(&model)
-	if model != "" {
-		r.Model = model
-	}
+	fmt.Println("Edit Penelitian")
 
-	fmt.Print("Judul Penelitian (sekarang: " + r.Judul + "): ")
+	fmt.Println("Pilih model:")
+	fmt.Println("1. Machine Learning")
+	fmt.Println("2. Deep Learning")
+	fmt.Println("3. Neural Networks")
+	fmt.Println("4. Generative Models")
+	fmt.Println("5. Reinforcement Learning")
+	fmt.Println("6. Supervised Learning")
+	fmt.Println("7. Unsupervised Learning")
+	var modelPilihan int
+	fmt.Print("Model Pilihan: ")
+	fmt.Scan(&modelPilihan)
+	model = getModelName(modelPilihan)
+
+	fmt.Print("Judul Penelitian: ")
 	fmt.Scan(&title)
-	if title != "" {
-		r.Judul = title
+	for i := 0; i < 3; i++ {
+		fmt.Printf("Nama Peneliti %d: ", i+1)
+		fmt.Scan(&researchers[i])
 	}
-
-	for j := 0; j < 3; j++ {
-		fmt.Printf("Nama Peneliti %d (sekarang: %s): ", j+1, r.Peneliti[j])
-		fmt.Scan(&researchers[j])
-		if researchers[j] != "" {
-			r.Peneliti[j] = researchers[j]
-		}
-	}
-
-	fmt.Print("Lembaga Penelitian (sekarang: " + r.Institusi + ", berhenti dengan titik): ")
+	fmt.Print("Lembaga Penelitian: ")
 	fmt.Scan(&institution)
-	if institution != "" {
-		institution = strings.TrimSuffix(institution, ".")
-		r.Institusi = institution
-	}
 
-	fmt.Print("Waktu Mulai Penelitian (sekarang: " + r.WaktuMulai.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Mulai Penelitian (dd-mm-yyyy): ")
 	fmt.Scan(&startDate)
-	if startDate != "" {
-		start, err := time.Parse("02-01-2006", startDate)
-		if err == nil {
-			r.WaktuMulai = start
-		}
-	}
-
-	fmt.Print("Waktu Berakhir Penelitian (sekarang: " + r.WaktuSelesai.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Berakhir Penelitian (dd-mm-yyyy): ")
 	fmt.Scan(&endDate)
-	if endDate != "" {
-		end, err := time.Parse("02-01-2006", endDate)
-		if err == nil {
-			r.WaktuSelesai = end
-		}
-	}
-
-	fmt.Print("Waktu Publikasi Penelitian (sekarang: " + r.WaktuPublikasi.Format("02-01-2006") + "): ")
+	fmt.Print("Waktu Publikasi Penelitian (dd-mm-yyyy): ")
 	fmt.Scan(&publicationDate)
-	if publicationDate != "" {
-		pub, err := time.Parse("02-01-2006", publicationDate)
-		if err == nil {
-			r.WaktuPublikasi = pub
-		}
+
+	start, err := time.Parse("02-01-2006", startDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
+	}
+	end, err := time.Parse("02-01-2006", endDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
+	}
+	pub, err := time.Parse("02-01-2006", publicationDate)
+	if err != nil {
+		fmt.Println("Format tanggal salah")
+		return
 	}
 
-	fmt.Print("Metode Penelitian (sekarang: " + r.Metode + "): ")
+	fmt.Print("Metode Penelitian: ")
 	fmt.Scan(&method)
-	if method != "" {
-		r.Metode = method
-	}
 
-	fmt.Print("Summary Penelitian (sekarang: " + r.Summary + ", akhiri dengan bintang): ")
+	fmt.Print("Summary Penelitian: ")
 	fmt.Scan(&summary)
-	if summary != "" {
-		summary = strings.TrimSuffix(summary, "*")
-		r.Summary = summary
-	}
 
-	fmt.Println("Penelitian berhasil diubah")
-	displayResearch(*r)
+	p.Model = model
+	p.Judul = title
+	p.Peneliti = researchers
+	p.Institusi = institution
+	p.WaktuMulai = start
+	p.WaktuSelesai = end
+	p.WaktuPublikasi = pub
+	p.Metode = method
+	p.Summary = summary
+
+	fmt.Printf("Penelitian %s berhasil diedit\n", title)
+	displayResearch(*p)
 	menuUtama()
 }
 
