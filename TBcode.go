@@ -330,7 +330,7 @@ func sequentialSortByMethod(penelitian []Penelitian) {
 	n := len(penelitian)
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
-			if penelitian[i].Metode > penelitian[j].Metode {
+			if penelitian[i].Metode > penelitian[j].Metode { 
 				penelitian[i], penelitian[j] = penelitian[j], penelitian[i]
 			}
 		}
@@ -346,11 +346,12 @@ func viewResearchSummary() {
 		if penelitianList[i].ID == id {
 			fmt.Println("Summary Penelitian:")
 			fmt.Println(penelitianList[i].Summary)
-			return
+			menuUtama()
+		} else {
+			fmt.Println("Penelitian dengan ID tersebut tidak ditemukan")
+			menuUtama()
 		}
 	}
-	fmt.Println("Penelitian dengan ID tersebut tidak ditemukan")
-	menuUtama()
 }
 
 func compareResearch() {
